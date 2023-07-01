@@ -16,11 +16,10 @@ class ProductServiceImpl extends ProductService {
 
   override def find(ean: Long): Option[Product] = products.find(_.ean == ean)
 
-  override def update(product: Product): Either[String, Unit] = {
+  override def update(product: Product): Either[String, Unit] =
     products.indexWhere(_.ean == product.ean) match {
       case -1 => Left("Product not found")
       case i =>
-       Right(products.updated(i, product))
+        Right(products.updated(i, product))
     }
-  }
 }
