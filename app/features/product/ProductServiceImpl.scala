@@ -1,6 +1,6 @@
 package features.product
 
-import features.Common.{Money, USD}
+import features.common.{Money, USD}
 
 class ProductServiceImpl extends ProductService {
 
