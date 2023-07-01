@@ -1,4 +1,4 @@
-package features.money
+package features.Common
 
 sealed trait Currency
 case object USD extends Currency

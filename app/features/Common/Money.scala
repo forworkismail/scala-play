@@ -1,4 +1,6 @@
-package features.money
+package features.Common
+
+import play.api.libs.json.{Format, Json}
 
 case class Money(amount: BigDecimal, currency: Currency) {
   require(amount >= 0, "Amount of money cannot be negative")
@@ -24,4 +26,8 @@ case class Money(amount: BigDecimal, currency: Currency) {
   }
 
   // Other arithmetic operations can be defined similarly
+}
+
+object Money {
+  implicit val format: Format[Money] = Json.format
 }
