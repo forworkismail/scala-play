@@ -1,30 +1,26 @@
 package features.warehouse
 
-import features.common.{Money, USD}
 import features.order.Order
-import features.product.Product
+import features.product.{Product, ProductService}
+import features.productStock.ProductStock
 
-import javax.inject.Singleton
+import javax.inject.{Inject, Singleton}
 
 @Singleton
-class WarehouseServiceImpl extends WarehouseService {
+class WarehouseServiceImpl @Inject()(productService: ProductService) extends WarehouseService {
   private var warehouses = Seq(
-    Warehouse(
-      1L,
-      "New York",
-      Map(
-        Product(5010255079763L, "Paperclips Large", "Large Plain Pack of 1000", Money(5.0, USD), 100) -> 500,
-        Product(5018206244666L, "Giant Paperclips", "Giant Plain 51mm 100 pack", Money(10.0, USD), 200) -> 300
-      )
-    ),
-    Warehouse(
-      2L,
-      "San Francisco",
-      Map(
-        Product(5018306332812L, "Paperclip Giant Plain", "Giant Plain Pack of 10000", Money(15.0, USD), 150) -> 200,
-        Product(5018306312913L, "No Tear Paper Clip", "No Tear Extra Large Pack of 1000", Money(20.0, USD), 50) -> 150
-      )
-    )
+    Warehouse(1L,
+              "New York",
+              Seq(
+                ProductStock(productService.find(5010255079763L).get, 100),
+                ProductStock(productService.find(5018206244666L).get, 200),
+              )),
+    Warehouse(2L,
+              "San Francisco",
+              Seq(
+                ProductStock(productService.find(5010255079763L).get, 50),
+                ProductStock(productService.find(5018206244666L).get, 150),
+              ))
   )
 
   override def list(): Seq[Warehouse] = warehouses
@@ -36,8 +32,11 @@ class WarehouseServiceImpl extends WarehouseService {
     if (index == -1) {
       Left("Warehouse does not exist")
     } else {
-      val oldStock = warehouse.stock.getOrElse(product, 0)
-      val updatedWarehouse = warehouse.copy(stock = warehouse.stock.updated(product, oldStock + quantity))
+      val updatedStock = warehouse.stock.find(_.product == product) match {
+        case Some(stockItem) => warehouse.stock.updated(index, stockItem.copy(quantity = stockItem.quantity + quantity))
+        case None            => warehouse.stock :+ ProductStock(product, quantity)
+      }
+      val updatedWarehouse = warehouse.copy(stock = updatedStock)
       warehouses = warehouses.updated(index, updatedWarehouse)
       Right(())
     }
@@ -48,18 +47,29 @@ class WarehouseServiceImpl extends WarehouseService {
     if (index == -1) {
       Left("Warehouse does not exist")
     } else {
-      order.lines.foreach { orderLine =>
-        val stock = warehouse.stock.getOrElse(orderLine.product, 0)
-        if (stock < orderLine.quantity) {
-          return Left(s"Not enough stock for product ${orderLine.product.ean}")
+      val updatedStockOrError: Either[String, Seq[ProductStock]] =
+        order.lines.foldLeft[Either[String, Seq[ProductStock]]](Right(warehouse.stock)) {
+          case (Left(errorMessage), _) => Left(errorMessage)
+          case (Right(updatedStock), orderLine) =>
+            updatedStock.find(_.product == orderLine.product) match {
+              case Some(productStock) =>
+                if (productStock.quantity < orderLine.quantity) {
+                  Left(s"Not enough stock for product ${orderLine.product.ean}")
+                } else {
+                  val updatedProductStock = productStock.copy(quantity = productStock.quantity - orderLine.quantity)
+                  Right(updatedStock.updated(updatedStock.indexOf(productStock), updatedProductStock))
+                }
+              case None => Left(s"Product ${orderLine.product.ean} not found in warehouse")
+            }
         }
+
+      updatedStockOrError match {
+        case Left(errorMessage) => Left(errorMessage)
+        case Right(updatedStock) =>
+          val updatedWarehouse = warehouse.copy(stock = updatedStock)
+          warehouses = warehouses.updated(index, updatedWarehouse)
+          Right(())
       }
-      val updatedStock = order.lines.foldLeft(warehouse.stock) { (stock, orderLine) =>
-        stock.updated(orderLine.product, stock(orderLine.product) - orderLine.quantity)
-      }
-      val updatedWarehouse = warehouse.copy(stock = updatedStock)
-      warehouses = warehouses.updated(index, updatedWarehouse)
-      Right(())
     }
   }
 

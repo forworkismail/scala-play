@@ -1,6 +1,7 @@
 package features.warehouse
 
 import features.order.Order
+import features.product.Product
 
 trait WarehouseService {
   def list(): Seq[Warehouse]

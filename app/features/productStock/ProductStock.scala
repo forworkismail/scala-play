@@ -1,5 +1,6 @@
 package features.productStock
 
+import features.product.Product
 import play.api.libs.json.{Format, Json}
 
 case class ProductStock(product: Product, quantity: Int)
