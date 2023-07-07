@@ -1,6 +1,6 @@
 package features.order
 
-import features.orderline.OrderLine
+import features.order_line.OrderLine
 import features.product.ProductService
 
 import javax.inject.Inject

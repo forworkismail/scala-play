@@ -1,6 +1,6 @@
 package features.order
 
-import features.orderline.OrderLine
+import features.order_line.OrderLine
 import play.api.libs.json.{Format, Json}
 
 case class Order(id: Long, lines: Seq[OrderLine])

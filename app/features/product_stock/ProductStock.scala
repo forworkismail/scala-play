@@ -1,4 +1,4 @@
-package features.productStock
+package features.product_stock
 
 import features.product.Product
 import play.api.libs.json.{Format, Json}

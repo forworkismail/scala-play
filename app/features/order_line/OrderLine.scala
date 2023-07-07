@@ -1,4 +1,4 @@
-package features.orderline
+package features.order_line
 
 import features.product.Product
 import play.api.libs.json.{Format, Json}

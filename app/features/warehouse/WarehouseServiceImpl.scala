@@ -2,7 +2,7 @@ package features.warehouse
 
 import features.order.Order
 import features.product.{Product, ProductService}
-import features.productStock.ProductStock
+import features.product_stock.ProductStock
 
 import javax.inject.{Inject, Singleton}
 

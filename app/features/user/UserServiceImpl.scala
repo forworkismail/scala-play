@@ -11,9 +11,9 @@ import scala.concurrent.{Await, Future}
 class UserServiceImpl @Inject()(roleService: RoleService) extends UserService {
 
   val user1Future: Future[Option[User]] =
-    roleService.find(1L).map(roleOpt => roleOpt.map(role => User(1L, "John", Seq(role))))
+    roleService.find(1L).map(roleOpt => roleOpt.map(role => User(1L, "John")))
   val user2Future: Future[Option[User]] =
-    roleService.find(2L).map(roleOpt => roleOpt.map(role => User(2L, "Jane", Seq(role))))
+    roleService.find(2L).map(roleOpt => roleOpt.map(role => User(2L, "Jane")))
 
   var users: Seq[User] = Seq(user1Future, user2Future).flatMap(futureUser => Await.result(futureUser, Duration.Inf))
 
