@@ -12,7 +12,7 @@ GET        /roles               features.role.RoleController.list
 GET        /roles/:id           features.role.RoleController.get(id: Long)
 
 GET        /users               features.user.UserController.list
-GET        /users/:id           features.user.UserController.get(id: Long)
+#GET        /users/:id           features.user.UserController.get(id: Long)
 
 # Map static resources from the /public folder to the /assets URL path
 GET        /assets/*file        controllers.Assets.versioned(path="/public", file: Asset)
